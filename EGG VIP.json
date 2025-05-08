@@ -1,0 +1,58 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2"
+    },
+    "exported_at": "2025-04-08T13:45:00+07:00",
+    "name": "NARUYA IZUMI",
+    "author": "naruya@izumi.dev",
+    "description": "Copyright © Naruya Izumi",
+    "docker_images": {
+        "Node.js Stable Version": "docker.io\/bionicc\/nodejs-wabot:latest",
+        "Node.js LTS Alpine": "docker.io\/bionicc\/nodejs-wabot:alpine",
+        "Node.js LTS Kali": "docker.io\/bionicc\/nodejs-wabot:kali",
+        "Node.js LTS Backports": "ghcr.io\/mydapitt\/node:backports-lts",
+        "Node.js v23.11.0": "docker.io\/bionicc\/nodejs-wabot:23",
+        "Node.js 22.14.0": "docker.io\/bionicc\/nodejs-wabot:22",
+        "Node.js 22 Base OS Ubuntu": "docker.io\/bionicc\/nodejs-wabot:22-ubuntu",
+        "Node.js 21.7.3": "docker.io\/bionicc\/nodejs-wabot:21",
+        "Node.js 20.19.0": "docker.io\/bionicc\/nodejs-wabot:20",
+        "Node.js 20 Base OS Ubuntu": "docker.io\/bionicc\/nodejs-wabot:20-ubuntu",
+        "Node.js 20 Base OS Jammy": "ghcr.io\/mydapitt\/node:20-jammy",
+        "Node.js 20 Base OS Lunar": "ghcr.io\/mydapitt\/node:20-lunar",
+        "Node.js 19.9.0": "docker.io\/bionicc\/nodejs-wabot:19",
+        "Node.js 18.20.8": "docker.io\/bionicc\/nodejs-wabot:18",
+        "Node.js 18 Base OS Ubuntu": "docker.io\/bionicc\/nodejs-wabot:18-ubuntu",
+        "Node.js 18 Base OS Focal": "ghcr.io\/mydapitt\/node:18-focal",
+        "Node.js 17.9.1": "docker.io\/bionicc\/nodejs-wabot:17",
+        "Node.js 16.20.2": "docker.io\/bionicc\/nodejs-wabot:16",
+        "Node.js 16 Focal": "ghcr.io\/mydapitt\/node:16-focal"
+    },
+    "file_denylist": [],
+    "startup": "if [[ -d .git ]] && [[ {{AUTO_UPDATE}} == \"1\" ]]; then git pull; fi; if [[ ! -z ${NODE_PACKAGES} ]]; then \/usr\/local\/bin\/npm install ${NODE_PACKAGES}; fi; if [[ ! -z ${UNNODE_PACKAGES} ]]; then \/usr\/local\/bin\/npm uninstall ${UNNODE_PACKAGES}; fi; if [ -f \/home\/container\/package.json ]; then \/usr\/local\/bin\/npm install; fi;  if [[ ! -z ${CUSTOM_ENVIRONMENT_VARIABLES} ]]; then      vars=$(echo ${CUSTOM_ENVIRONMENT_VARIABLES} | tr \";\" \"n\");      for line in $vars;     do export $line;     done fi;  \/usr\/local\/bin\/${CMD_RUN};",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": [\r\n        \"change this text 1\",\r\n        \"change this text 2\"\r\n    ]\r\n}",
+        "logs": "{}",
+        "stop": "^^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# NodeJS App Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\napt update\r\napt install curl -y\r\n\r\ncurl -fsSL https:\/\/deb.nodesource.com\/setup_lts.x | bash \r\n\r\napt update && apt install -y curl wget git nodejs npm jq file unzip make gcc g++ python3 python3-dev python3-pip libtool net-tools iputils-ping dnsutils traceroute nano vim htop lsof nmap neofetch zip unzip build-essential pkg-config ca-certificates gnupg software-properties-common iproute2 netcat telnet socat tmux mc sudo\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\r\n    echo -e \"assuming user knows what they are doing have a good day.\"\r\n    exit 0\r\nfi\r\n\r\n## add git ending if it's not on the address\r\nif [[ ${GIT_ADDRESS} != *.git ]]; then\r\n    GIT_ADDRESS=${GIT_ADDRESS}.git\r\nfi\r\n\r\nif [ -z \"${USERNAME}\" ] && [ -z \"${ACCESS_TOKEN}\" ]; then\r\n    echo -e \"using anon api call\"\r\nelse\r\n    GIT_ADDRESS=\"https:\/\/${USERNAME}:${ACCESS_TOKEN}@$(echo -e ${GIT_ADDRESS} | cut -d\/ -f3-)\"\r\nfi\r\n\r\n## pull git js repo\r\nif [ \"$(ls -A \/mnt\/server)\" ]; then\r\n    echo -e \"\/mnt\/server directory is not empty.\"\r\n    if [ -d .git ]; then\r\n        echo -e \".git directory exists\"\r\n        if [ -f .git\/config ]; then\r\n            echo -e \"loading info from git config\"\r\n            ORIGIN=$(git config --get remote.origin.url)\r\n        else\r\n            echo -e \"files found with no git config\"\r\n            echo -e \"closing out without touching things to not break anything\"\r\n            exit 10\r\n        fi\r\n    fi\r\n\r\n    if [ \"${ORIGIN}\" == \"${GIT_ADDRESS}\" ]; then\r\n        echo \"pulling latest from github\"\r\n        git pull\r\n    fi\r\nelse\r\n    echo -e \"\/mnt\/server is empty.\ncloning files into repo\"\r\n    if [ -z ${BRANCH} ]; then\r\n        echo -e \"cloning default branch\"\r\n        git clone ${GIT_ADDRESS} .\r\n    else\r\n        echo -e \"cloning ${BRANCH}'\"\r\n        git clone --single-branch --branch ${BRANCH} ${GIT_ADDRESS} .\r\n    fi\r\n\r\nfi\r\n\r\necho \"Installing nodejs packages\"\r\nmkdir -p \/mnt\/server\/npm-global\r\nnpm config set prefix=\/mnt\/server\/npm-global\r\nexport PATH=\/mnt\/server\/npm-global\/bin:$PATH\r\necho 'export PATH=\/mnt\/server\/npm-global\/bin:$PATH' >> ~\/.bashrc\r\nif [[ ! -z ${NODE_PACKAGES} ]]; then\r\n    npm install -g ${NODE_PACKAGES}\r\nfi\r\nif [ -f \/mnt\/server\/package.json ]; then\r\n    npm install --production\r\nfi\r\necho -e \"install complete\"\r\nexit 0",
+            "container": "ghcr.io\/mydapitt\/deb:debian-stable",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "INI BUAT PERINTAH JALANIN BOTNYA 💖",
+            "description": "Copyright © 2024 Naruya Izumi",
+            "env_variable": "CMD_RUN",
+            "default_value": "npm start",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}
